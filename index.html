@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Explorateurs de Manuel Antonio</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --jungle:#1a472a; --jungle-mid:#2d6a4f; --jungle-light:#52b788;
+    --sun:#f4a261; --sun-bright:#ffb703; --ocean:#48cae4;
+    --sand:#fefae0; --bark:#6d4c41; --red:#e76f51;
+    --shadow:0 4px 20px rgba(26,71,42,0.22);
+    --shadow-lg:0 8px 40px rgba(26,71,42,0.32);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{font-family:'Nunito',sans-serif;background:var(--jungle);min-height:100vh;overflow-x:hidden;}
+
+  .bg{position:fixed;inset:0;z-index:0;background:linear-gradient(160deg,#0d2b1a 0%,#1a472a 45%,#2d6a4f 100%);}
+  /* Decorative jungle leaves in bg */
+  .bg::before{content:'';position:absolute;inset:0;background-image:
+    radial-gradient(ellipse 60px 80px at 8% 12%, rgba(82,183,136,0.07) 0%,transparent 70%),
+    radial-gradient(ellipse 50px 70px at 92% 25%, rgba(82,183,136,0.06) 0%,transparent 70%),
+    radial-gradient(ellipse 80px 60px at 5% 65%, rgba(82,183,136,0.05) 0%,transparent 70%),
+    radial-gradient(ellipse 40px 60px at 95% 75%, rgba(82,183,136,0.07) 0%,transparent 70%);}
+
+  #app{position:relative;z-index:1;max-width:430px;margin:0 auto;min-height:100vh;padding:0 0 88px;}
+
+  .screen{display:none;animation:fadeUp .38s ease;}
+  .screen.active{display:block;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+
+  /* ── HEADER ── */
+  .app-header{background:linear-gradient(135deg,#122e1c,var(--jungle-mid));padding:13px 16px;display:flex;align-items:center;gap:10px;border-bottom:3px solid var(--jungle-light);box-shadow:var(--shadow);position:sticky;top:0;z-index:100;}
+  .hdr-icon{font-size:1.9rem;}
+  .hdr-name{font-family:'Baloo 2',cursive;color:var(--sand);font-size:1rem;font-weight:800;line-height:1.2;}
+  .hdr-sub{color:var(--jungle-light);font-size:.68rem;font-weight:700;}
+  .hdr-score{margin-left:auto;background:var(--sun-bright);color:var(--jungle);font-family:'Baloo 2',cursive;font-weight:800;font-size:.98rem;padding:5px 13px;border-radius:20px;display:flex;align-items:center;gap:4px;}
+
+  /* ── NAV ── */
+  .bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#122e1c;border-top:2px solid var(--jungle-light);display:flex;z-index:200;}
+  .nav-btn{flex:1;padding:10px 4px 13px;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--jungle-light);opacity:.45;transition:all .2s;font-family:'Nunito',sans-serif;}
+  .nav-btn.active{opacity:1;color:var(--sun-bright);}
+  .nav-btn span{font-size:1.35rem;}
+  .nav-btn label{font-size:.6rem;font-weight:700;letter-spacing:.4px;cursor:pointer;}
+
+  /* ── WELCOME ── */
+  .welcome-hero{padding:30px 22px 20px;text-align:center;}
+  .welcome-animal{display:block;margin:0 auto 16px;width:160px;height:160px;filter:drop-shadow(0 8px 24px rgba(0,0,0,.45));}
+  .welcome-title{font-family:'Baloo 2',cursive;font-size:2rem;font-weight:800;color:var(--sand);line-height:1.1;margin-bottom:6px;}
+  .welcome-title em{color:var(--sun-bright);font-style:normal;}
+  .welcome-sub{color:var(--jungle-light);font-size:.9rem;margin-bottom:22px;font-style:italic;}
+  .name-card{background:rgba(255,255,255,.08);border:2px solid var(--jungle-light);border-radius:20px;padding:18px;margin-bottom:18px;}
+  .name-label{color:var(--sand);font-weight:700;font-size:.87rem;margin-bottom:7px;text-align:left;}
+  .name-input{width:100%;padding:11px 14px;background:rgba(255,255,255,.12);border:2px solid var(--jungle-light);border-radius:12px;color:var(--sand);font-family:'Nunito',sans-serif;font-size:1.05rem;font-weight:600;outline:none;transition:border-color .2s;}
+  .name-input::placeholder{color:rgba(255,255,255,.28);}
+  .name-input:focus{border-color:var(--sun-bright);}
+  .age-group{display:flex;gap:8px;margin-top:10px;}
+  .age-btn{flex:1;padding:10px 6px;background:rgba(255,255,255,.08);border:2px solid transparent;border-radius:12px;cursor:pointer;color:var(--sand);font-family:'Nunito',sans-serif;font-size:.76rem;font-weight:700;transition:all .2s;text-align:center;}
+  .age-btn.sel{background:var(--jungle-light);border-color:var(--sun-bright);color:var(--jungle);}
+  .age-btn span{display:block;font-size:1.2rem;margin-bottom:2px;}
+  .start-btn{width:100%;background:linear-gradient(135deg,var(--sun),var(--sun-bright));color:var(--jungle);border:none;border-radius:20px;padding:17px;cursor:pointer;font-family:'Baloo 2',cursive;font-size:1.25rem;font-weight:800;box-shadow:0 6px 22px rgba(244,162,97,.4);transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .start-btn:active{transform:scale(.97);}
+
+  /* ── HUNT ── */
+  .sec-title{font-family:'Baloo 2',cursive;font-size:1.22rem;font-weight:800;color:var(--sand);padding:18px 18px 3px;}
+  .sec-sub{color:var(--jungle-light);font-size:.78rem;padding:0 18px 13px;}
+  .prog-wrap{margin:0 18px 13px;background:rgba(255,255,255,.1);border-radius:10px;height:9px;overflow:hidden;}
+  .prog-fill{height:100%;background:linear-gradient(90deg,var(--jungle-light),var(--sun-bright));border-radius:10px;transition:width .5s ease;}
+  .animals-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 13px;}
+
+  .animal-card{background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.12);border-radius:18px;overflow:hidden;cursor:pointer;position:relative;transition:transform .15s,border-color .3s;}
+  .animal-card:active{transform:scale(.97);}
+  .animal-card.found{border-color:var(--jungle-light);background:rgba(82,183,136,.14);}
+  .animal-card.photo-taken{border-color:var(--sun-bright);}
+  /* illustration wrapper */
+  .art-wrap{width:100%;aspect-ratio:1/1;position:relative;overflow:hidden;background:rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;}
+  .art-wrap svg{width:90%;height:90%;transition:filter .4s,opacity .4s;}
+  .animal-card:not(.found) .art-wrap svg{filter:grayscale(1) brightness(.45);}
+  .kid-thumb{position:absolute;bottom:0;right:0;width:46px;height:46px;object-fit:cover;border-radius:9px 0 0 0;border-top:2px solid var(--sun-bright);border-left:2px solid var(--sun-bright);z-index:3;}
+  .badge-found{position:absolute;top:7px;right:7px;background:var(--sun-bright);color:var(--jungle);font-size:.58rem;font-weight:800;padding:3px 7px;border-radius:8px;font-family:'Baloo 2',cursive;z-index:2;}
+  .badge-photo{position:absolute;top:7px;left:7px;background:#25d366;color:#fff;font-size:.58rem;font-weight:800;padding:3px 7px;border-radius:8px;font-family:'Baloo 2',cursive;z-index:2;}
+  .card-body{padding:9px 10px 11px;}
+  .card-name{font-family:'Baloo 2',cursive;font-size:.8rem;font-weight:700;color:var(--sand);margin-bottom:2px;}
+  .card-hint{font-size:.67rem;color:var(--jungle-light);font-style:italic;}
+
+  /* ── MODAL ── */
+  .modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:500;align-items:flex-end;justify-content:center;}
+  .modal-ov.open{display:flex;}
+  .modal-sheet{width:100%;max-width:430px;background:linear-gradient(160deg,#182e20,#2d6a4f);border-radius:26px 26px 0 0;padding:20px 20px 38px;animation:slideUp .32s ease;border-top:3px solid var(--jungle-light);max-height:92vh;overflow-y:auto;}
+  @keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+  .modal-art{width:100%;height:200px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.22);border-radius:16px;margin-bottom:12px;overflow:hidden;}
+  .modal-art svg{width:190px;height:190px;}
+  .modal-name{font-family:'Baloo 2',cursive;font-size:1.5rem;font-weight:800;color:var(--sand);margin-bottom:2px;}
+  .modal-sci{color:var(--jungle-light);font-size:.8rem;font-style:italic;margin-bottom:11px;}
+  .sp-box{background:rgba(244,162,97,.15);border:2px solid var(--sun);border-radius:13px;padding:11px 13px;margin-bottom:11px;}
+  .sp-label{font-family:'Baloo 2',cursive;font-size:.73rem;color:var(--sun-bright);font-weight:800;margin-bottom:3px;letter-spacing:.5px;}
+  .sp-text{color:var(--sand);font-size:.85rem;line-height:1.5;}
+  .facts-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:13px;}
+  .fact-chip{background:rgba(255,255,255,.1);border-radius:18px;padding:5px 10px;font-size:.73rem;color:var(--sand);}
+
+  /* camera */
+  .cam-label{font-family:'Baloo 2',cursive;font-size:.84rem;font-weight:800;color:var(--sun-bright);margin-bottom:7px;display:flex;align-items:center;gap:5px;}
+  .cam-preview{width:100%;height:175px;background:#0d2b1a;border-radius:13px;overflow:hidden;position:relative;border:2px dashed rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:7px;margin-bottom:8px;transition:border-color .3s;}
+  .cam-preview.has-photo{border:2px solid var(--sun-bright);}
+  .cam-preview-img{width:100%;height:100%;object-fit:cover;display:none;}
+  .cam-preview-img.vis{display:block;}
+  .cam-ph{text-align:center;color:rgba(255,255,255,.3);pointer-events:none;}
+  .cam-ph span{font-size:2.4rem;display:block;margin-bottom:3px;}
+  .cam-ph p{font-size:.75rem;}
+  .take-btn{width:100%;padding:13px;background:linear-gradient(135deg,#1a7a3c,var(--jungle-light));color:var(--sand);border:none;border-radius:12px;cursor:pointer;font-family:'Baloo 2',cursive;font-size:.98rem;font-weight:800;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .2s;margin-bottom:6px;}
+  .take-btn:active{transform:scale(.97);}
+  .retake-btn{width:100%;padding:10px;background:rgba(255,255,255,.08);color:var(--jungle-light);border:1.5px solid var(--jungle-light);border-radius:12px;cursor:pointer;font-family:'Baloo 2',cursive;font-size:.85rem;font-weight:700;display:none;margin-bottom:6px;}
+  input[type=file]{display:none;}
+  .confirm-btn{width:100%;background:var(--jungle-light);color:var(--jungle);border:none;border-radius:13px;padding:14px;cursor:pointer;font-family:'Baloo 2',cursive;font-size:1.02rem;font-weight:800;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;margin-top:4px;}
+  .confirm-btn:disabled{opacity:.4;cursor:not-allowed;}
+  .confirm-btn:not(:disabled):active{transform:scale(.97);}
+  .already-msg{text-align:center;color:var(--jungle-light);font-style:italic;font-size:.83rem;padding:6px;}
+
+  /* ── JOURNAL ── */
+  .j-wrap{padding:0 13px;}
+  .j-date{font-size:.73rem;color:var(--jungle-light);font-style:italic;padding:2px 4px 9px;font-weight:600;}
+  .j-entry{background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.11);border-radius:17px;padding:13px;margin-bottom:10px;}
+  .j-head{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+  .j-thumb-art{width:48px;height:48px;border-radius:10px;background:rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;}
+  .j-thumb-art svg{width:44px;height:44px;}
+  .j-photo-thumb{width:48px;height:48px;border-radius:10px;object-fit:cover;flex-shrink:0;border:2px solid var(--sun-bright);}
+  .j-title{font-family:'Baloo 2',cursive;font-size:.93rem;font-weight:700;color:var(--sand);}
+  .j-time{font-size:.66rem;color:var(--jungle-light);margin-top:1px;}
+  .j-kid-photo{width:100%;border-radius:10px;margin-bottom:7px;border:2px solid var(--sun-bright);display:none;}
+  .j-kid-photo.vis{display:block;}
+  .j-ta{width:100%;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.14);border-radius:10px;padding:9px 11px;color:var(--sand);font-family:'Nunito',sans-serif;font-size:.84rem;line-height:1.5;resize:none;min-height:72px;outline:none;transition:border-color .2s;}
+  .j-ta::placeholder{color:rgba(255,255,255,.24);}
+  .j-ta:focus{border-color:var(--jungle-light);}
+  .j-hint{font-size:.68rem;color:var(--jungle-light);margin-top:4px;font-style:italic;}
+  .j-empty{text-align:center;padding:58px 20px;color:var(--jungle-light);font-style:italic;font-size:.88rem;}
+  .j-empty span{font-size:2.8rem;display:block;margin-bottom:11px;}
+
+  /* ── BADGES ── */
+  .bdg-wrap{padding:0 13px;}
+  .bdg-intro{background:rgba(255,255,255,.06);border-radius:17px;padding:14px;margin-bottom:13px;text-align:center;}
+  .bdg-intro-title{font-family:'Baloo 2',cursive;font-size:1.03rem;font-weight:800;color:var(--sand);margin-bottom:3px;}
+  .bdg-intro-sub{font-size:.78rem;color:var(--jungle-light);}
+  .bdg-list{display:flex;flex-direction:column;gap:8px;}
+  .bdg-item{background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.1);border-radius:15px;padding:12px 13px;display:flex;align-items:center;gap:11px;transition:all .2s;}
+  .bdg-item.earned{background:rgba(82,183,136,.14);border-color:var(--jungle-light);}
+  .bdg-icon{font-size:2rem;flex-shrink:0;filter:grayscale(1) brightness(.45);}
+  .bdg-item.earned .bdg-icon{filter:none;}
+  .bdg-info{flex:1;}
+  .bdg-name{font-family:'Baloo 2',cursive;font-size:.88rem;font-weight:800;color:var(--sand);}
+  .bdg-desc{font-size:.7rem;color:var(--jungle-light);margin-top:1px;}
+  .bdg-status{font-size:.67rem;font-weight:700;font-family:'Baloo 2',cursive;padding:3px 9px;border-radius:8px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.28);white-space:nowrap;}
+  .bdg-item.earned .bdg-status{background:var(--sun-bright);color:var(--jungle);}
+
+  /* ── CERT ── */
+  .cert-wrap{padding:17px 13px;}
+  .certificate{background:linear-gradient(160deg,#fefae0,#fff8e1);border-radius:22px;padding:22px 18px;border:4px solid var(--sun);box-shadow:0 0 0 7px rgba(244,162,97,.1),var(--shadow-lg);text-align:center;position:relative;overflow:hidden;}
+  .cert-wm{position:absolute;font-size:7rem;opacity:.04;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;}
+  .cert-top{font-size:.7rem;font-weight:700;color:var(--jungle-mid);letter-spacing:1.5px;margin-bottom:5px;text-transform:uppercase;}
+  .cert-title{font-family:'Baloo 2',cursive;font-size:1.45rem;font-weight:800;color:var(--jungle);line-height:1.2;margin-bottom:2px;}
+  .cert-name{font-family:'Baloo 2',cursive;font-size:1.75rem;font-weight:800;color:var(--jungle-mid);border-bottom:3px solid var(--sun);padding-bottom:6px;margin:9px 0;}
+  .cert-desc{font-size:.81rem;color:var(--bark);line-height:1.6;margin-bottom:13px;}
+  .cert-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:5px;margin-bottom:12px;}
+  .cert-chip{display:flex;align-items:center;gap:4px;background:var(--jungle);color:var(--sand);font-size:.7rem;font-weight:700;padding:3px 8px;border-radius:8px;font-family:'Baloo 2',cursive;}
+  .cert-chip-thumb{width:20px;height:20px;border-radius:4px;object-fit:cover;border:1px solid var(--sun);}
+  .cert-stars{font-size:1.35rem;letter-spacing:4px;margin-bottom:6px;}
+  .cert-sig{font-style:italic;font-size:.78rem;color:var(--jungle-mid);margin-top:9px;}
+  .cert-kh{font-family:'Baloo 2',cursive;font-size:1.03rem;color:var(--jungle);font-weight:800;}
+  .cert-date{font-size:.68rem;color:var(--bark);margin-top:3px;}
+  .share-section{margin-top:15px;}
+  .share-btn{width:100%;padding:14px;background:var(--jungle-mid);color:var(--sand);border:none;border-radius:13px;cursor:pointer;font-family:'Baloo 2',cursive;font-size:.96rem;font-weight:800;display:flex;align-items:center;justify-content:center;gap:7px;margin-bottom:8px;transition:all .2s;}
+  .share-btn.wa{background:linear-gradient(135deg,#25d366,#128c7e);}
+  .share-btn:active{transform:scale(.97);}
+
+  /* ── TOAST ── */
+  .toast{position:fixed;top:74px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--sun-bright);color:var(--jungle);font-family:'Baloo 2',cursive;font-size:.96rem;font-weight:800;padding:10px 22px;border-radius:28px;z-index:999;transition:transform .3s;white-space:nowrap;box-shadow:var(--shadow-lg);pointer-events:none;}
+  .toast.show{transform:translateX(-50%) translateY(0);}
+  .confetti-piece{position:fixed;width:9px;height:9px;border-radius:2px;animation:cfall 1.6s ease-in forwards;z-index:999;pointer-events:none;}
+  @keyframes cfall{0%{transform:translateY(-40px) rotate(0);opacity:1;}100%{transform:translateY(100vh) rotate(720deg);opacity:0;}}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div id="app">
+
+  <!-- HEADER -->
+  <div class="app-header" id="mainHeader" style="display:none">
+    <span class="hdr-icon">🦥</span>
+    <div><div class="hdr-name" id="hdrName">Explorateur</div><div class="hdr-sub">Manuel Antonio 🇫🇷</div></div>
+    <div class="hdr-score">⭐ <span id="scoreDisp">0</span></div>
+  </div>
+
+  <!-- WELCOME -->
+  <div class="screen active" id="screen-welcome">
+    <div class="welcome-hero">
+      <!-- Welcome sloth SVG illustration -->
+      <svg class="welcome-animal" viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+        <!-- Branch -->
+        <rect x="10" y="38" width="140" height="14" rx="7" fill="#5d4037"/>
+        <rect x="10" y="38" width="140" height="6" rx="3" fill="#795548"/>
+        <!-- Body -->
+        <ellipse cx="80" cy="95" rx="32" ry="26" fill="#a1887f"/>
+        <ellipse cx="80" cy="93" rx="24" ry="20" fill="#bcaaa4"/>
+        <!-- Mask / face patch -->
+        <ellipse cx="80" cy="78" rx="18" ry="14" fill="#a1887f"/>
+        <ellipse cx="80" cy="76" rx="13" ry="10" fill="#d7ccc8"/>
+        <!-- Eyes -->
+        <circle cx="74" cy="74" r="5" fill="#1a1a1a"/>
+        <circle cx="86" cy="74" r="5" fill="#1a1a1a"/>
+        <circle cx="75.5" cy="72.5" r="1.8" fill="white"/>
+        <circle cx="87.5" cy="72.5" r="1.8" fill="white"/>
+        <!-- Nose -->
+        <ellipse cx="80" cy="80" rx="4" ry="2.5" fill="#8d6e63"/>
+        <!-- Smile -->
+        <path d="M75 84 Q80 88 85 84" stroke="#8d6e63" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+        <!-- Arms holding branch -->
+        <path d="M54 90 Q44 65 50 42" stroke="#a1887f" stroke-width="11" fill="none" stroke-linecap="round"/>
+        <path d="M106 90 Q116 65 110 42" stroke="#a1887f" stroke-width="11" fill="none" stroke-linecap="round"/>
+        <!-- 3-toed claws left -->
+        <path d="M49 41 L44 34 M49 41 L49 32 M49 41 L54 34" stroke="#5d4037" stroke-width="3" stroke-linecap="round"/>
+        <!-- 3-toed claws right -->
+        <path d="M111 41 L106 34 M111 41 L111 32 M111 41 L116 34" stroke="#5d4037" stroke-width="3" stroke-linecap="round"/>
+        <!-- Green algae dots on fur -->
+        <circle cx="70" cy="98" r="3.5" fill="#81c784" opacity=".7"/>
+        <circle cx="90" cy="102" r="2.8" fill="#a5d6a7" opacity=".6"/>
+        <circle cx="78" cy="108" r="3" fill="#66bb6a" opacity=".65"/>
+        <circle cx="92" cy="90" r="2.5" fill="#81c784" opacity=".5"/>
+        <!-- Leaf decoration -->
+        <ellipse cx="130" cy="28" rx="14" ry="8" fill="#2e7d32" opacity=".8" transform="rotate(-30 130 28)"/>
+        <ellipse cx="25" cy="30" rx="12" ry="7" fill="#388e3c" opacity=".7" transform="rotate(25 25 30)"/>
+      </svg>
+      <h1 class="welcome-title">Bienvenue à<br><em>Manuel Antonio!</em></h1>
+      <p class="welcome-sub">Ta mission : explorer la jungle avec Khaluah 📸🌿</p>
+      <div class="name-card">
+        <div class="name-label">🧒 Comment tu t'appelles ?</div>
+        <input class="name-input" id="nameInput" type="text" placeholder="Ton prénom..." maxlength="20">
+        <div class="name-label" style="margin-top:13px">👦👧 Quel âge as-tu ?</div>
+        <div class="age-group">
+          <button class="age-btn" data-age="petit" onclick="selAge(this)"><span>🌱</span>4–7 ans</button>
+          <button class="age-btn" data-age="moyen" onclick="selAge(this)"><span>🌿</span>8–12 ans</button>
+          <button class="age-btn" data-age="grand" onclick="selAge(this)"><span>🌳</span>13+ ans</button>
+        </div>
+      </div>
+      <button class="start-btn" onclick="startAdventure()">🎒 Commencer l'Aventure !</button>
+    </div>
+  </div>
+
+  <!-- HUNT -->
+  <div class="screen" id="screen-hunt">
+    <div class="sec-title">🔭 Chasse aux Animaux</div>
+    <div class="sec-sub" id="huntSub">Trouve les animaux et prends-les en photo !</div>
+    <div class="prog-wrap"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+    <div class="animals-grid" id="animalsGrid"></div>
+  </div>
+
+  <!-- JOURNAL -->
+  <div class="screen" id="screen-journal">
+    <div class="sec-title">📓 Mon Carnet de Voyage</div>
+    <div class="j-date" id="jDate"></div>
+    <div class="j-wrap" id="jWrap"></div>
+  </div>
+
+  <!-- BADGES -->
+  <div class="screen" id="screen-badges">
+    <div class="sec-title">🏅 Mes Badges</div>
+    <div class="sec-sub">Débloque des badges en explorant !</div>
+    <div class="bdg-wrap">
+      <div class="bdg-intro"><div class="bdg-intro-title" id="bdgTitle">🌱 Apprenti Naturaliste</div><div class="bdg-intro-sub" id="bdgSub">Continue à explorer !</div></div>
+      <div class="bdg-list" id="bdgList"></div>
+    </div>
+  </div>
+
+  <!-- CERT -->
+  <div class="screen" id="screen-cert">
+    <div class="cert-wrap">
+      <div class="certificate">
+        <div class="cert-wm">🌿</div>
+        <div class="cert-top">🌿 Parc National de Manuel Antonio · Costa Rica 🌿</div>
+        <div class="cert-stars">⭐⭐⭐</div>
+        <div class="cert-title">Certificat d'Explorateur</div>
+        <div style="font-size:.76rem;color:var(--bark);margin:3px 0 6px">décerné à</div>
+        <div class="cert-name" id="certName">—</div>
+        <div class="cert-desc" id="certDesc">A brillamment exploré le parc national.</div>
+        <div class="cert-chips" id="certChips"></div>
+        <div class="cert-sig">Signé avec amour par<br><span class="cert-kh">🦥 Khaluah</span><br><span style="font-size:.71rem">Guide francophone · Manuel Antonio</span></div>
+        <div class="cert-date" id="certDate"></div>
+      </div>
+      <div class="share-section">
+        <button class="share-btn wa" onclick="shareWA()">📲 Partager sur WhatsApp</button>
+        <button class="share-btn" onclick="window.print()">🖨️ Imprimer le Certificat</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav" id="bottomNav" style="display:none">
+  <button class="nav-btn active" data-s="hunt" onclick="showScreen('hunt',this)"><span>🔭</span><label>Chasse</label></button>
+  <button class="nav-btn" data-s="journal" onclick="showScreen('journal',this)"><span>📓</span><label>Journal</label></button>
+  <button class="nav-btn" data-s="badges" onclick="showScreen('badges',this)"><span>🏅</span><label>Badges</label></button>
+  <button class="nav-btn" data-s="cert" onclick="showScreen('cert',this)"><span>📜</span><label>Diplôme</label></button>
+</div>
+
+<!-- MODAL -->
+<div class="modal-ov" id="animalModal" onclick="closeModal(event)">
+  <div class="modal-sheet">
+    <div class="modal-art" id="modalArt"></div>
+    <div class="modal-name" id="modalName"></div>
+    <div class="modal-sci" id="modalSci"></div>
+    <div class="sp-box"><div class="sp-label">⚡ SUPER-POUVOIR</div><div class="sp-text" id="modalSP"></div></div>
+    <div class="facts-row" id="modalFacts"></div>
+    <!-- camera -->
+    <div id="camSection">
+      <div class="cam-label">📸 Prouve que tu l'as trouvé !</div>
+      <div class="cam-preview" id="camPreview">
+        <img class="cam-preview-img" id="camImg" src="" alt="">
+        <div class="cam-ph" id="camPh"><span>📷</span><p>Prends une photo de l'animal !</p></div>
+      </div>
+      <input type="file" accept="image/*" capture="environment" id="fileInput" onchange="handlePhoto(event)">
+      <button class="take-btn" id="takeBtn" onclick="document.getElementById('fileInput').click()">📸 Ouvrir l'Appareil Photo</button>
+      <button class="retake-btn" id="retakeBtn" onclick="retake()">🔄 Reprendre la photo</button>
+    </div>
+    <div class="already-msg" id="alreadyMsg" style="display:none">✅ Animal déjà trouvé et photographié !</div>
+    <button class="confirm-btn" id="confirmBtn" onclick="confirmFound()" disabled>📸 Prends d'abord une photo !</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════
+//  SVG ILLUSTRATIONS  (inline, no network)
+// ══════════════════════════════════════════
+const SVG = {
+
+paresseux:`<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <rect x="5" y="22" width="110" height="11" rx="5.5" fill="#5d4037"/>
+  <rect x="5" y="22" width="110" height="5" rx="2.5" fill="#795548"/>
+  <path d="M38 68 Q28 50 32 28" stroke="#a1887f" stroke-width="9" fill="none" stroke-linecap="round"/>
+  <path d="M82 68 Q92 50 88 28" stroke="#a1887f" stroke-width="9" fill="none" stroke-linecap="round"/>
+  <path d="M31 27 L26 20 M31 27 L31 18 M31 27 L36 20" stroke="#4e342e" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M89 27 L84 20 M89 27 L89 18 M89 27 L94 20" stroke="#4e342e" stroke-width="2.5" stroke-linecap="round"/>
+  <ellipse cx="60" cy="80" rx="26" ry="21" fill="#8d6e63"/>
+  <ellipse cx="60" cy="78" rx="19" ry="16" fill="#bcaaa4"/>
+  <ellipse cx="60" cy="63" rx="15" ry="12" fill="#8d6e63"/>
+  <ellipse cx="60" cy="61" rx="11" ry="9" fill="#d7ccc8"/>
+  <circle cx="55" cy="59" r="4.5" fill="#1a1a1a"/><circle cx="65" cy="59" r="4.5" fill="#1a1a1a"/>
+  <circle cx="56.5" cy="57.5" r="1.6" fill="white"/><circle cx="66.5" cy="57.5" r="1.6" fill="white"/>
+  <ellipse cx="60" cy="65" rx="3.5" ry="2" fill="#795548"/>
+  <path d="M55 69 Q60 73 65 69" stroke="#795548" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <circle cx="50" cy="83" r="3" fill="#81c784" opacity=".75"/>
+  <circle cx="70" cy="87" r="2.5" fill="#a5d6a7" opacity=".65"/>
+  <circle cx="60" cy="91" r="2.8" fill="#66bb6a" opacity=".7"/>
+  <circle cx="72" cy="75" r="2" fill="#81c784" opacity=".55"/>
+  <circle cx="48" cy="76" r="2.3" fill="#a5d6a7" opacity=".6"/>
+</svg>`,
+
+singe:`<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <!-- ears -->
+  <circle cx="34" cy="52" r="12" fill="#5d4037"/><circle cx="34" cy="52" r="7" fill="#f8bbd0"/>
+  <circle cx="86" cy="52" r="12" fill="#5d4037"/><circle cx="86" cy="52" r="7" fill="#f8bbd0"/>
+  <!-- body -->
+  <ellipse cx="60" cy="85" rx="22" ry="20" fill="#5d4037"/>
+  <ellipse cx="60" cy="84" rx="14" ry="14" fill="#f5f5f5"/>
+  <!-- head -->
+  <circle cx="60" cy="52" r="24" fill="#5d4037"/>
+  <ellipse cx="60" cy="58" rx="16" ry="12" fill="#f5f5f5"/>
+  <!-- eyes -->
+  <circle cx="52" cy="48" r="6" fill="white"/><circle cx="68" cy="48" r="6" fill="white"/>
+  <circle cx="53" cy="48" r="3.8" fill="#1a1a1a"/><circle cx="69" cy="48" r="3.8" fill="#1a1a1a"/>
+  <circle cx="54" cy="46.5" r="1.4" fill="white"/><circle cx="70" cy="46.5" r="1.4" fill="white"/>
+  <!-- nose -->
+  <ellipse cx="60" cy="57" rx="5" ry="3.5" fill="#4e342e"/>
+  <circle cx="58" cy="56" r="1.2" fill="#3e2723"/><circle cx="62" cy="56" r="1.2" fill="#3e2723"/>
+  <!-- mouth -->
+  <path d="M54 62 Q60 67 66 62" stroke="#4e342e" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <!-- arms -->
+  <path d="M42 82 Q25 75 22 88" stroke="#5d4037" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <path d="M78 82 Q95 75 98 88" stroke="#5d4037" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <!-- tail curl -->
+  <path d="M75 100 Q95 105 100 95 Q105 85 95 82" stroke="#5d4037" stroke-width="5" fill="none" stroke-linecap="round"/>
+</svg>`,
+
+ara:`<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <!-- tail feathers -->
+  <path d="M52 100 Q44 118 35 115" stroke="#1565c0" stroke-width="7" fill="none" stroke-linecap="round"/>
+  <path d="M58 100 Q55 120 48 120" stroke="#0288d1" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <path d="M64 98 Q66 118 74 116" stroke="#1565c0" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <!-- wings -->
+  <ellipse cx="28" cy="72" rx="22" ry="13" fill="#c62828" transform="rotate(-20 28 72)"/>
+  <ellipse cx="26" cy="73" rx="16" ry="9" fill="#e53935" transform="rotate(-20 26 73)"/>
+  <ellipse cx="92" cy="72" rx="22" ry="13" fill="#c62828" transform="rotate(20 92 72)"/>
+  <ellipse cx="94" cy="73" rx="16" ry="9" fill="#e53935" transform="rotate(20 94 73)"/>
+  <!-- yellow wing band -->
+  <ellipse cx="38" cy="66" rx="12" ry="5" fill="#f9a825" transform="rotate(-25 38 66)"/>
+  <ellipse cx="82" cy="66" rx="12" ry="5" fill="#f9a825" transform="rotate(25 82 66)"/>
+  <!-- body -->
+  <ellipse cx="60" cy="80" rx="20" ry="25" fill="#e53935"/>
+  <!-- head -->
+  <circle cx="60" cy="50" r="20" fill="#e53935"/>
+  <!-- white face patch -->
+  <ellipse cx="60" cy="52" rx="12" ry="10" fill="#fff9c4"/>
+  <!-- tiny feather lines on face -->
+  <path d="M52 48 L68 48 M52 51 L68 51 M52 54 L68 54" stroke="#ffcc80" stroke-width=".7" opacity=".7"/>
+  <!-- eye -->
+  <circle cx="60" cy="47" r="6" fill="#1a1a1a"/>
+  <circle cx="61.5" cy="45.5" r="2" fill="white"/>
+  <!-- beak -->
+  <path d="M48 54 Q45 60 50 63 Q60 66 70 63 Q75 60 72 54 Z" fill="#37474f"/>
+  <path d="M50 54 Q60 57 70 54" stroke="#546e7a" stroke-width="1.2" fill="none"/>
+  <!-- blue chin -->
+  <ellipse cx="60" cy="63" rx="8" ry="4" fill="#1565c0" opacity=".6"/>
+  <!-- feet on branch -->
+  <rect x="40" y="102" width="40" height="7" rx="3.5" fill="#5d4037"/>
+  <path d="M50 109 L46 116 M50 109 L50 117 M50 109 L54 116" stroke="#4e342e" stroke-width="2.2" stroke-linecap="round"/>
+  <path d="M70 109 L66 116 M70 109 L70 117 M70 109 L74 116" stroke="#4e342e" stroke-width="2.2" stroke-linecap="round"/>
+</svg>`,
+
+toucan:`<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <!-- branch -->
+  <rect x="30" y="100" width="60" height="8" rx="4" fill="#5d4037"/>
+  <!-- body -->
+  <ellipse cx="60" cy="78" rx="22" ry="26" fill="#1a1a1a"/>
+  <!-- white chest -->
+  <ellipse cx="60" cy="80" rx="13" ry="17" fill="#f5f5f5"/>
+  <!-- red undertail -->
+  <ellipse cx="60" cy="97" rx="10" ry="6" fill="#e53935"/>
+  <!-- head -->
+  <circle cx="60" cy="47" r="20" fill="#1a1a1a"/>
+  <!-- eye ring -->
+  <circle cx="66" cy="43" r="9" fill="#4caf50"/>
+  <circle cx="66" cy="43" r="6.5" fill="#1a1a1a"/>
+  <circle cx="67.5" cy="41.5" r="2.2" fill="white"/>
+  <!-- BEAK — multi-color gradient-style -->
+  <path d="M55 46 Q50 50 48 58 Q50 68 60 70 Q68 68 72 60 L88 48 Q78 38 55 46Z" fill="#f9a825"/>
+  <path d="M55 46 Q50 50 48 58 Q50 63 60 65 Q64 63 67 57 L80 46 Q70 40 55 46Z" fill="#43a047"/>
+  <path d="M55 46 Q52 48 50 54 L62 56 L72 48 Q65 42 55 46Z" fill="#e53935"/>
+  <!-- beak tip black -->
+  <circle cx="88" cy="48" r="4" fill="#1a1a1a"/>
+  <!-- beak ridge -->
+  <path d="M58 47 Q73 43 88 48" stroke="#f57f17" stroke-width="1.2" fill="none" opacity=".7"/>
+  <!-- wing hint -->
+  <path d="M40 75 Q35 85 38 98" stroke="#333" stroke-width="7" fill="none" stroke-linecap="round"/>
+  <path d="M80 75 Q85 85 82 98" stroke="#333" stroke-width="7" fill="none" stroke-linecap="round"/>
+  <!-- feet -->
+  <path d="M50 107 L46 114 M50 107 L53 115" stroke="#4e342e" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M70 107 L67 114 M70 107 L73 115" stroke="#4e342e" stroke-width="2.5" stroke-linecap="round"/>
+</svg>`,
+
+papillon:`<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <!-- upper wings -->
+  <ellipse cx="38" cy="52" rx="32" ry="28" fill="#1565c0" transform="rotate(-15 38 52)"/>
+  <ellipse cx="82" cy="52" rx="32" ry="28" fill="#1565c0" transform="rotate(15 82 52)"/>
+  <!-- iridescent shimmer upper -->
+  <ellipse cx="35" cy="50" rx="22" ry="18" fill="#42a5f5" opacity=".6" transform="rotate(-15 35 50)"/>
+  <ellipse cx="85" cy="50" rx="22" ry="18" fill="#42a5f5" opacity=".6" transform="rotate(15 85 50)"/>
+  <ellipse cx="33" cy="48" rx="12" ry="10" fill="#90caf9" opacity=".5" transform="rotate(-15 33 48)"/>
+  <ellipse cx="87" cy="48" rx="12" ry="10" fill="#90caf9" opacity=".5" transform="rotate(15 87 48)"/>
+  <!-- lower wings -->
+  <ellipse cx="40" cy="78" rx="24" ry="20" fill="#0d47a1" transform="rotate(10 40 78)"/>
+  <ellipse cx="80" cy="78" rx="24" ry="20" fill="#0d47a1" transform="rotate(-10 80 78)"/>
+  <ellipse cx="40" cy="77" rx="15" ry="13" fill="#1976d2" opacity=".6" transform="rotate(10 40 77)"/>
+  <ellipse cx="80" cy="77" rx="15" ry="13" fill="#1976d2" opacity=".6" transform="rotate(-10 80 77)"/>
+  <!-- black border spots -->
+  <circle cx="25" cy="42" r="4" fill="#1a1a1a" opacity=".5"/>
+  <circle cx="95" cy="42" r="4" fill="#1a1a1a" opacity=".5"/>
+  <circle cx="30" cy="78" r="5" fill="#1a1a1a" opacity=".45"/>
+  <circle cx="90" cy="78" r="5" fill="#1a1a1a" opacity=".45"/>
+  <!-- orange accent spots -->
+  <circle cx="18" cy="55" r="5" fill="#ff8f00" opacity=".8"/>
+  <circle cx="102" cy="55" r="5" fill="#ff8f00" opacity=".8"/>
+  <!-- body -->
+  <ellipse cx="60" cy="62" rx="5" ry="30" fill="#1a1a1a"/>
+  <ellipse cx="60" cy="62" rx="3" ry="28" fill="#3e2723"/>
+  <!-- antennae -->
+  <path d="M57 35 Q52 20 47 15" stroke="#1a1a1a" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <path d="M63 35 Q68 20 73 15" stroke="#1a1a1a" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <circle cx="47" cy="15" r="3" fill="#1a1a1a"/>
+  <circle cx="73" cy="15" r="3" fill="#1a1a1a"/>
+  <!-- white underside dots on wings -->
+  <circle cx="40" cy="62" r="2" fill="white" opacity=".4"/>
+  <circle cx="80" cy="62" r="2" fill="white" opacity=".4"/>
+</svg>`,
+
+coati:`<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <!-- long striped tail up -->
+  <path d="M85 85 Q100 70 105 50 Q108 35 100 25" stroke="#8d6e63" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <path d="M85 85 Q100 70 105 50 Q108 35 100 25" stroke="#bcaaa4" stroke-width="4" fill="none" stroke-linecap="round" stroke-dasharray="6 6"/>
+  <!-- body -->
+  <ellipse cx="55" cy="80" rx="28" ry="18" fill="#8d6e63"/>
+  <ellipse cx="55" cy="80" rx="19" ry="12" fill="#a1887f"/>
+  <!-- head -->
+  <ellipse cx="30" cy="68" rx="18" ry="14" fill="#8d6e63"/>
+  <!-- long snout -->
+  <path d="M14 68 Q8 68 6 72 Q8 76 14 74 Q18 72 22 68" fill="#6d4c41"/>
+  <ellipse cx="10" cy="70" rx="5" ry="4" fill="#5d4037"/>
+  <!-- nostrils -->
+  <circle cx="8" cy="70" r="1.2" fill="#3e2723"/>
+  <circle cx="12" cy="70" r="1.2" fill="#3e2723"/>
+  <!-- white face mask -->
+  <ellipse cx="24" cy="63" rx="8" ry="5" fill="#f5f5f5" opacity=".7"/>
+  <!-- eye -->
+  <circle cx="24" cy="63" r="5" fill="#1a1a1a"/>
+  <circle cx="25.5" cy="61.5" r="1.8" fill="white"/>
+  <!-- ear -->
+  <ellipse cx="38" cy="56" rx="6" ry="8" fill="#6d4c41"/>
+  <ellipse cx="38" cy="57" rx="3.5" ry="5" fill="#ffccbc"/>
+  <!-- legs -->
+  <rect x="35" y="93" width="7" height="16" rx="3.5" fill="#6d4c41"/>
+  <rect x="48" y="93" width="7" height="16" rx="3.5" fill="#6d4c41"/>
+  <rect x="60" y="93" width="7" height="16" rx="3.5" fill="#6d4c41"/>
+  <rect x="73" y="93" width="7" height="16" rx="3.5" fill="#6d4c41"/>
+  <!-- claws -->
+  <path d="M35 109 L33 115 M38 110 L38 116 M42 109 L44 115" stroke="#4e342e" stroke-width="1.8" stroke-linecap="round"/>
+</svg>`,
+
+iguane:`<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <!-- branch -->
+  <rect x="5" y="72" width="110" height="9" rx="4.5" fill="#5d4037"/>
+  <!-- long tail -->
+  <path d="M95 72 Q108 60 112 45 Q115 30 108 20" stroke="#4caf50" stroke-width="7" fill="none" stroke-linecap="round"/>
+  <!-- tail stripes -->
+  <path d="M95 72 Q108 60 112 45 Q115 30 108 20" stroke="#1b5e20" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-dasharray="5 5"/>
+  <!-- body -->
+  <ellipse cx="60" cy="68" rx="35" ry="14" fill="#388e3c"/>
+  <ellipse cx="60" cy="66" rx="28" ry="10" fill="#4caf50"/>
+  <!-- dorsal spines -->
+  <path d="M30 58 L28 46 M38 56 L36 43 M46 54 L44 41 M54 53 L53 40 M62 53 L62 40 M70 54 L71 41 M78 55 L80 43" stroke="#2e7d32" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- head -->
+  <ellipse cx="22" cy="66" rx="17" ry="11" fill="#388e3c"/>
+  <ellipse cx="20" cy="65" rx="12" ry="8" fill="#4caf50"/>
+  <!-- main eye -->
+  <circle cx="18" cy="62" r="5.5" fill="#f9a825"/>
+  <circle cx="18" cy="62" r="3.2" fill="#1a1a1a"/>
+  <circle cx="19.5" cy="60.5" r="1.2" fill="white"/>
+  <!-- THIRD EYE on top of head (parietal eye) -->
+  <ellipse cx="25" cy="56" rx="3.5" ry="2.5" fill="#c8e6c9"/>
+  <circle cx="25" cy="56" r="1.8" fill="#558b2f"/>
+  <circle cx="25" cy="56" r=".8" fill="#1a1a1a"/>
+  <text x="21" y="52" font-size="6" fill="#ffeb3b" font-family="sans-serif" font-weight="bold">3e œil</text>
+  <!-- nostril -->
+  <circle cx="10" cy="65" r="1.5" fill="#2e7d32"/>
+  <!-- dewlap -->
+  <path d="M15 70 Q12 80 18 82 Q24 80 22 70" fill="#e53935" opacity=".8"/>
+  <!-- legs -->
+  <path d="M40 76 Q38 90 30 95" stroke="#2e7d32" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <path d="M55 76 Q53 90 50 97" stroke="#2e7d32" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <path d="M75 76 Q77 90 85 95" stroke="#2e7d32" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <!-- toes -->
+  <path d="M30 95 L25 102 M30 95 L31 103 M30 95 L36 100" stroke="#1b5e20" stroke-width="2" stroke-linecap="round"/>
+</svg>`,
+
+ratonlaveur:`<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <!-- striped tail -->
+  <path d="M88 88 Q105 80 110 65 Q114 50 105 40" stroke="#9e9e9e" stroke-width="10" fill="none" stroke-linecap="round"/>
+  <path d="M88 88 Q105 80 110 65 Q114 50 105 40" stroke="#1a1a1a" stroke-width="5" fill="none" stroke-linecap="round" stroke-dasharray="6 5"/>
+  <!-- body -->
+  <ellipse cx="58" cy="82" rx="28" ry="22" fill="#9e9e9e"/>
+  <ellipse cx="58" cy="80" rx="20" ry="16" fill="#bdbdbd"/>
+  <!-- white belly -->
+  <ellipse cx="58" cy="83" rx="12" ry="10" fill="#f5f5f5" opacity=".7"/>
+  <!-- head -->
+  <circle cx="40" cy="63" r="22" fill="#9e9e9e"/>
+  <!-- iconic black eye mask -->
+  <ellipse cx="34" cy="60" rx="10" ry="7" fill="#1a1a1a" opacity=".85"/>
+  <ellipse cx="46" cy="60" rx="10" ry="7" fill="#1a1a1a" opacity=".85"/>
+  <!-- white between mask -->
+  <ellipse cx="40" cy="60" rx="4" ry="5" fill="#e0e0e0"/>
+  <!-- ears -->
+  <circle cx="26" cy="46" r="9" fill="#757575"/><circle cx="26" cy="46" r="5" fill="#f5f5f5"/>
+  <circle cx="54" cy="46" r="9" fill="#757575"/><circle cx="54" cy="46" r="5" fill="#f5f5f5"/>
+  <!-- eyes -->
+  <circle cx="34" cy="59" r="5" fill="#1a1a1a"/><circle cx="46" cy="59" r="5" fill="#1a1a1a"/>
+  <circle cx="35.5" cy="57.5" r="1.8" fill="white"/><circle cx="47.5" cy="57.5" r="1.8" fill="white"/>
+  <!-- muzzle -->
+  <ellipse cx="40" cy="68" rx="9" ry="6" fill="#e0e0e0"/>
+  <!-- nose -->
+  <ellipse cx="40" cy="65" rx="3.5" ry="2.5" fill="#1a1a1a"/>
+  <circle cx="38.5" cy="64.5" r="1" fill="#424242"/><circle cx="41.5" cy="64.5" r="1" fill="#424242"/>
+  <!-- mouth -->
+  <path d="M35 70 Q40 74 45 70" stroke="#9e9e9e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <!-- "sensitive" hands glow -->
+  <ellipse cx="28" cy="97" rx="10" ry="6" fill="#757575"/>
+  <ellipse cx="28" cy="97" rx="7" ry="4" fill="#bdbdbd"/>
+  <path d="M22 100 L19 107 M26 101 L24 108 M30 101 L30 108 M34 100 L36 107" stroke="#757575" stroke-width="2" stroke-linecap="round"/>
+  <!-- glow around hands = sensitive touch -->
+  <ellipse cx="28" cy="97" rx="13" ry="8" fill="#fff9c4" opacity=".25"/>
+  <!-- legs -->
+  <path d="M72 99 L70 112" stroke="#757575" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <path d="M82 99 L84 112" stroke="#757575" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <!-- tail stripes label -->
+  <path d="M52 98 L68 98" stroke="#bdbdbd" stroke-width="4" stroke-linecap="round"/>
+</svg>`
+};
+
+// ══════════════════════════════════════════
+//  ANIMAL DATA
+// ══════════════════════════════════════════
+const ANIMALS = [
+  {id:'paresseux', name:'Paresseux à trois doigts', sciName:'Bradypus variegatus',
+   hint:'Regarde tout en haut des arbres !',
+   superpower:'Mon poil fait pousser des algues vertes pour me camoufler ! Et mes 3 griffes me permettent de dormir suspendu sans effort. 🌿',
+   facts:['😴 Je dors 18h/jour','🌱 Des algues poussent dans mon poil','💚 3 griffes incurvées'],
+   points:15},
+  {id:'singe', name:'Singe Capucin à face blanche', sciName:'Cebus capucinus imitator',
+   hint:'Il fait beaucoup de bruit là-haut !',
+   superpower:'J\'utilise des pierres pour casser des noix comme les humains ! Ma mémoire dure 30 ans. Je me souviens de TOUT. 🧠',
+   facts:['🔧 J\'utilise des outils','🧠 Mémoire de 30 ans','🐒 200 vocalisations différentes'],
+   points:10},
+  {id:'ara', name:'Ara Rouge (Guacamayo)', sciName:'Ara macao',
+   hint:'Écoute les cris colorés dans le ciel !',
+   superpower:'Je vis jusqu\'à 80 ans et je me marie pour la vie entière ! Mon bec brise les noix de coco. 🦜',
+   facts:['🎉 80 ans de vie','💑 Un partenaire pour toujours','🗣️ Je copie les voix humaines'],
+   points:15},
+  {id:'toucan', name:'Toucan à carène', sciName:'Ramphastos sulfuratus',
+   hint:'Son bec coloré est plus grand que sa tête !',
+   superpower:'Mon grand bec est CREUX et ultra-léger ! Il régule ma température comme un radiateur naturel. ❄️🔥',
+   facts:['🎭 Bec = radiateur naturel','🍓 100 fruits par jour','🐣 Niche dans les trous d\'arbres'],
+   points:15},
+  {id:'papillon', name:'Morpho Bleu', sciName:'Morpho peleides',
+   hint:'Cherche un éclair de bleu électrique !',
+   superpower:'Mes ailes ne sont PAS bleues — des nano-structures dévient la lumière comme un prisme. Je suis un arc-en-ciel vivant ! 🌈',
+   facts:['🔵 Bleu optique, pas pigment','📡 Visible à 1 km','⚡ Je vis 115 jours seulement'],
+   points:10},
+  {id:'coati', name:'Coati (Pizote)', sciName:'Nasua narica',
+   hint:'Il fouille le sol avec son long nez !',
+   superpower:'Mon nez s\'articule à 60 degrés dans tous les sens ! Je retourne des pierres 5× plus lourdes que moi. 👃',
+   facts:['👃 Nez hyper-flexible','💪 Super-force relative','👨‍👩‍👧 Groupes de 30 individus'],
+   points:8},
+  {id:'iguane', name:'Iguane Vert', sciName:'Iguana iguana',
+   hint:'Il bronze immobile sur les branches !',
+   superpower:'J\'ai un TROISIÈME ŒIL sur le sommet de la tête ! Il détecte les ombres des prédateurs d\'en haut. Extraterrestre ! 👁️',
+   facts:['👁️ 3 yeux dont 1 sur le crâne','🤽 Je nage très bien','🌞 Le soleil me donne de l\'énergie'],
+   points:8},
+  {id:'ratonlaveur', name:'Raton Laveur', sciName:'Procyon lotor',
+   hint:'Il rôde près de la plage la nuit !',
+   superpower:'Mes pattes sont aussi sensibles que des doigts humains ! Sous l\'eau, ma sensibilité est ×4. Je "vois" avec mes mains ! 🤲',
+   facts:['🤲 Pattes = super-capteurs','🧠 Intelligence élevée','🌙 Actif la nuit'],
+   points:8}
+];
+
+const BADGES = [
+  {id:'premier',icon:'🌱',name:'Premier Pas',desc:'Trouve et photographie ton premier animal',req:1,type:'found'},
+  {id:'curieux',icon:'🔍',name:'Curieux de Nature',desc:'Trouve 3 animaux',req:3,type:'found'},
+  {id:'photo3',icon:'📸',name:'Photographe Junior',desc:'Prends 3 photos d\'animaux',req:3,type:'photo'},
+  {id:'exploJr',icon:'🎒',name:'Explorateur Junior',desc:'Trouve 5 animaux',req:5,type:'found'},
+  {id:'naturaliste',icon:'🏆',name:'Grand Naturaliste',desc:'Trouve tous les animaux !',req:8,type:'found'},
+  {id:'ecrivain',icon:'✍️',name:'Écrivain de Jungle',desc:'Écris dans ton carnet',req:1,type:'journal'},
+  {id:'khaluah',icon:'🦥',name:'Ami de Khaluah',desc:'Complète toute l\'aventure !',req:8,type:'found'},
+];
+
+// ══════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════
+let state = {name:'',age:'',score:0,found:[],photos:{},journalEdited:[],journalTexts:{}};
+let curAnimal = null, pendingPhoto = null;
+
+// ══════════════════════════════════════════
+//  WELCOME
+// ══════════════════════════════════════════
+function selAge(btn){
+  document.querySelectorAll('.age-btn').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel'); state.age = btn.dataset.age;
+}
+function startAdventure(){
+  const name = document.getElementById('nameInput').value.trim();
+  if(!name){showToast('✏️ Entre ton prénom !');return;}
+  if(!state.age){showToast('🎂 Choisis ton âge !');return;}
+  state.name = name;
+  document.getElementById('hdrName').textContent = name;
+  document.getElementById('mainHeader').style.display='flex';
+  document.getElementById('bottomNav').style.display='flex';
+  renderHunt(); renderJournal(); renderBadges(); renderCert();
+  showScreen('hunt', document.querySelector('.nav-btn[data-s="hunt"]'));
+  document.getElementById('screen-welcome').classList.remove('active');
+}
+
+// ══════════════════════════════════════════
+//  HUNT
+// ══════════════════════════════════════════
+function renderHunt(){
+  const subs={petit:'Trouve les animaux cachés et prends-les en photo ! 📸',moyen:'Observe chaque animal et prouve que tu l\'as vu avec une photo !',grand:'Identifie les espèces et documente chaque observation avec ta caméra !'};
+  document.getElementById('huntSub').textContent = subs[state.age]||subs.moyen;
+  const grid = document.getElementById('animalsGrid');
+  grid.innerHTML='';
+  ANIMALS.forEach(a=>{
+    const found=state.found.includes(a.id), hasPhoto=!!state.photos[a.id];
+    const card=document.createElement('div');
+    card.className='animal-card'+(found?' found':'')+(hasPhoto?' photo-taken':'');
+    card.innerHTML=`
+      ${found?'<div class="badge-found">TROUVÉ !</div>':''}
+      ${hasPhoto?'<div class="badge-photo">📸 Photo</div>':''}
+      <div class="art-wrap">
+        ${SVG[a.id]||''}
+        ${hasPhoto?`<img class="kid-thumb" src="${state.photos[a.id]}" alt="ta photo">`:''}
+      </div>
+      <div class="card-body">
+        <div class="card-name">${a.name}</div>
+        <div class="card-hint">${found?'✅ Observé et photographié !':'💡 '+a.hint}</div>
+      </div>`;
+    card.onclick=()=>openModal(a);
+    grid.appendChild(card);
+  });
+  updateProgress();
+}
+function updateProgress(){
+  document.getElementById('progFill').style.width=(state.found.length/ANIMALS.length*100)+'%';
+  document.getElementById('scoreDisp').textContent=state.score;
+}
+
+// ══════════════════════════════════════════
+//  MODAL
+// ══════════════════════════════════════════
+function openModal(animal){
+  curAnimal=animal; pendingPhoto=null;
+  const found=state.found.includes(animal.id);
+  document.getElementById('modalArt').innerHTML=SVG[animal.id]||'';
+  document.getElementById('modalName').textContent=animal.name;
+  document.getElementById('modalSci').textContent=animal.sciName;
+  document.getElementById('modalSP').textContent=animal.superpower;
+  document.getElementById('modalFacts').innerHTML=animal.facts.map(f=>`<div class="fact-chip">${f}</div>`).join('');
+  const ci=document.getElementById('camImg'),cp=document.getElementById('camPh'),
+    cw=document.getElementById('camPreview'),tb=document.getElementById('takeBtn'),
+    rb=document.getElementById('retakeBtn'),cb=document.getElementById('confirmBtn'),
+    cs=document.getElementById('camSection'),am=document.getElementById('alreadyMsg');
+  document.getElementById('fileInput').value='';
+  if(found){
+    am.style.display='block';
+    if(state.photos[animal.id]){
+      ci.src=state.photos[animal.id]; ci.classList.add('vis');
+      cp.style.display='none'; cw.classList.add('has-photo');
+      tb.style.display='none'; rb.style.display='none';
+      cs.style.display='block';
+    } else { cs.style.display='none'; }
+    cb.disabled=true; cb.textContent='✅ Déjà découvert !';
+  } else {
+    am.style.display='none'; cs.style.display='block';
+    ci.src=''; ci.classList.remove('vis');
+    cp.style.display='flex'; cw.classList.remove('has-photo');
+    tb.style.display='flex'; rb.style.display='none';
+    cb.disabled=true; cb.textContent='📸 Prends d\'abord une photo !';
+  }
+  document.getElementById('animalModal').classList.add('open');
+}
+function closeModal(e){if(e.target.id==='animalModal')document.getElementById('animalModal').classList.remove('open');}
+function handlePhoto(e){
+  const f=e.target.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    pendingPhoto=ev.target.result;
+    const ci=document.getElementById('camImg'),cp=document.getElementById('camPh'),
+      cw=document.getElementById('camPreview'),tb=document.getElementById('takeBtn'),
+      rb=document.getElementById('retakeBtn'),cb=document.getElementById('confirmBtn');
+    ci.src=pendingPhoto; ci.classList.add('vis');
+    cp.style.display='none'; cw.classList.add('has-photo');
+    tb.style.display='none'; rb.style.display='block';
+    cb.disabled=false;
+    cb.innerHTML=`✅ Confirmer ! (+${curAnimal.points} pts)`;
+  };
+  r.readAsDataURL(f);
+}
+function retake(){
+  pendingPhoto=null;
+  document.getElementById('camImg').src=''; document.getElementById('camImg').classList.remove('vis');
+  document.getElementById('camPh').style.display='flex';
+  document.getElementById('camPreview').classList.remove('has-photo');
+  document.getElementById('takeBtn').style.display='flex'; document.getElementById('retakeBtn').style.display='none';
+  document.getElementById('confirmBtn').disabled=true;
+  document.getElementById('confirmBtn').textContent='📸 Prends d\'abord une photo !';
+  document.getElementById('fileInput').value='';
+}
+function confirmFound(){
+  if(!curAnimal||state.found.includes(curAnimal.id))return;
+  if(!pendingPhoto){showToast('📸 Prends une photo d\'abord !');return;}
+  state.found.push(curAnimal.id);
+  state.photos[curAnimal.id]=pendingPhoto;
+  state.score+=curAnimal.points;
+  document.getElementById('animalModal').classList.remove('open');
+  showConfetti(); showToast(`🌿 +${curAnimal.points} pts ! Super photo !`);
+  renderHunt(); renderJournal(); renderBadges(); renderCert();
+  checkBadgeToasts();
+}
+
+// ══════════════════════════════════════════
+//  JOURNAL
+// ══════════════════════════════════════════
+function renderJournal(){
+  const now=new Date();
+  document.getElementById('jDate').textContent=`📅 ${now.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}`;
+  const wrap=document.getElementById('jWrap');
+  if(state.found.length===0){wrap.innerHTML=`<div class="j-empty"><span>🌿</span>Trouve des animaux pour remplir ton carnet !</div>`;return;}
+  wrap.innerHTML='';
+  state.found.forEach(id=>{
+    const a=ANIMALS.find(x=>x.id===id); if(!a)return;
+    const savedText=state.journalTexts[id]||'';
+    const ph=state.age==='petit'?`Ce que j'ai aimé du ${a.name}...`:`Décris ce que tu as observé quand tu as vu le ${a.name}...`;
+    const el=document.createElement('div'); el.className='j-entry';
+    const photo=state.photos[id]||'';
+    el.innerHTML=`
+      <div class="j-head">
+        ${photo
+          ?`<img class="j-photo-thumb" src="${photo}" alt="ma photo">`
+          :`<div class="j-thumb-art">${SVG[id]||''}</div>`}
+        <div><div class="j-title">${a.name}</div><div class="j-time">📸 Photographié · Manuel Antonio</div></div>
+      </div>
+      ${photo?`<img class="j-kid-photo vis" src="${photo}" alt="Ma photo">`:''}
+      <textarea class="j-ta" placeholder="${ph}" data-id="${id}">${savedText}</textarea>
+      <div class="j-hint">✏️ Note quelque chose de spécial que tu as remarqué !</div>`;
+    wrap.appendChild(el);
+  });
+  document.querySelectorAll('.j-ta').forEach(ta=>ta.addEventListener('input',e=>{
+    const id=e.target.dataset.id; state.journalTexts[id]=e.target.value;
+    if(!state.journalEdited.includes(id)&&e.target.value.length>5){state.journalEdited.push(id);renderBadges();}
+  }));
+}
+
+// ══════════════════════════════════════════
+//  BADGES
+// ══════════════════════════════════════════
+function renderBadges(){
+  const list=document.getElementById('bdgList'); list.innerHTML='';
+  BADGES.forEach(b=>{
+    const earned=isBadgeEarned(b);
+    const el=document.createElement('div'); el.className='bdg-item'+(earned?' earned':'');
+    el.innerHTML=`<div class="bdg-icon">${b.icon}</div><div class="bdg-info"><div class="bdg-name">${b.name}</div><div class="bdg-desc">${b.desc}</div></div><div class="bdg-status">${earned?'✅ Gagné !':'🔒'}</div>`;
+    list.appendChild(el);
+  });
+  const earned=BADGES.filter(b=>isBadgeEarned(b)).length;
+  const levels=[
+    {min:0,t:'🌱 Apprenti Naturaliste',s:'Commence à explorer !'},
+    {min:1,t:'🌿 Curieux de Nature',s:'Belle curiosité ! Continue !'},
+    {min:3,t:'🎒 Explorateur Junior',s:'Tu connais bien la jungle !'},
+    {min:5,t:'🔭 Expert du Parc',s:'Khaluah est fière de toi !'},
+    {min:6,t:'🏆 Grand Naturaliste',s:'Expert de Manuel Antonio !'},
+  ];
+  const lv=levels.filter(l=>earned>=l.min).pop();
+  document.getElementById('bdgTitle').textContent=lv.t;
+  document.getElementById('bdgSub').textContent=lv.s;
+}
+function isBadgeEarned(b){
+  if(b.type==='found')return state.found.length>=b.req;
+  if(b.type==='photo')return Object.keys(state.photos).length>=b.req;
+  if(b.type==='journal')return state.journalEdited.length>=b.req;
+  return false;
+}
+function checkBadgeToasts(){
+  const ms=[1,3,5,8];
+  if(ms.includes(state.found.length)){
+    const last=BADGES.filter(b=>isBadgeEarned(b)).pop();
+    if(last)setTimeout(()=>showToast(`${last.icon} Badge débloqué : ${last.name} !`),900);
+  }
+}
+
+// ══════════════════════════════════════════
+//  CERT
+// ══════════════════════════════════════════
+function renderCert(){
+  document.getElementById('certName').textContent=state.name;
+  const n=state.found.length;
+  const descs={
+    petit:`${state.name} a exploré le parc avec émerveillement et photographié ${n} animaux !`,
+    moyen:`${state.name} a identifié et photographié ${n} espèces du parc national de Manuel Antonio.`,
+    grand:`${state.name} a documenté ${n} espèces avec photographies à l'appui dans leur habitat naturel.`
+  };
+  document.getElementById('certDesc').textContent=descs[state.age]||descs.moyen;
+  document.getElementById('certChips').innerHTML=state.found.map(id=>{
+    const a=ANIMALS.find(x=>x.id===id); if(!a)return'';
+    const p=state.photos[id];
+    return`<div class="cert-chip">${p?`<img class="cert-chip-thumb" src="${p}" alt="">`:'🌿'} ${a.name}</div>`;
+  }).join('');
+  const now=new Date();
+  document.getElementById('certDate').textContent=`Le ${now.toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})}`;
+}
+
+// ══════════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════════
+function showScreen(name,btn){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  if(name==='journal')renderJournal();
+  if(name==='cert')renderCert();
+}
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+function showConfetti(){
+  const cols=['#f4a261','#ffb703','#52b788','#48cae4','#e76f51','#fefae0','#80cbc4'];
+  for(let i=0;i<22;i++){
+    const el=document.createElement('div'); el.className='confetti-piece';
+    el.style.cssText=`left:${Math.random()*100}%;top:-10px;background:${cols[Math.floor(Math.random()*cols.length)]};animation-delay:${Math.random()*.5}s;animation-duration:${1.2+Math.random()*.9}s;transform:rotate(${Math.random()*360}deg);`;
+    document.body.appendChild(el); setTimeout(()=>el.remove(),2500);
+  }
+}
+function shareWA(){
+  const n=state.found.length;
+  const txt=`🌿 *${state.name}* vient de terminer l'aventure de Manuel Antonio avec Khaluah !\n\n`
+    +`📸 ${n} animal${n>1?'s':''} trouvé${n>1?'s':''} et photographié${n>1?'s':''} !\n`
+    +`⭐ Score : ${state.score} points\n\n`
+    +`Merci Khaluah pour cette incroyable visite francophone ! 🇫🇷🦥🇨🇷`;
+  window.open('https://wa.me/?text='+encodeURIComponent(txt));
+}
+</script>
+</body>
+</html>
